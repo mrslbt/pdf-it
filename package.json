@@ -1,0 +1,72 @@
+{
+  "name": "pdf-it-mcp",
+  "version": "1.0.0",
+  "mcpName": "io.github.mrslbt/pdf-it",
+  "description": "Turn Claude research output into designed PDFs. Cover page, table of contents, code blocks that hold across pages. MCP server and Claude Code skill for markdown to PDF.",
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "modelcontextprotocol",
+    "claude",
+    "claude-code",
+    "claude-desktop",
+    "anthropic",
+    "anthropic-skill",
+    "skill",
+    "pdf",
+    "pdf-generation",
+    "pdf-generator",
+    "markdown",
+    "markdown-to-pdf",
+    "report",
+    "research",
+    "puppeteer",
+    "ai-agents",
+    "cursor"
+  ],
+  "homepage": "https://github.com/mrslbt/pdf-it#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrslbt/pdf-it.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mrslbt/pdf-it/issues"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Marsel Bait",
+    "url": "https://marselbait.me"
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "pdf-it-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "SKILL.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "markdown-it": "^14.1.1",
+    "pdf-lib": "^1.17.1",
+    "puppeteer-core": "^24.42.0"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
