@@ -19,6 +19,25 @@ Anthropic ships a [PDF skill](https://github.com/anthropics/skills/tree/main/ski
 
 A 12-page sample is in [`examples/designing-ai-agent-uiux.pdf`](./examples/designing-ai-agent-uiux.pdf).
 
+## Works with
+
+`pdf-it` is a standard Model Context Protocol server. Any client that supports MCP locally can use it.
+
+| Client | Supported | How to add |
+|---|---|---|
+| Claude Desktop (Mac, Windows) | yes | Edit `claude_desktop_config.json` |
+| Claude Code (CLI) | yes, plus skill triggers like "save this as PDF" | `claude mcp add pdf-it -- npx -y pdf-it-mcp` |
+| Cursor | yes | Edit `~/.cursor/mcp.json` |
+| Cline (VS Code extension) | yes | Edit Cline's MCP settings |
+| Continue.dev | yes | Add via Continue's MCP config |
+| Zed | yes | Standard MCP config |
+| Goose (Block's CLI) | yes | Standard MCP config |
+| Custom agents via the Anthropic SDK | yes | Wire MCP yourself |
+| claude.ai (browser) | no | Web does not run local MCP servers |
+| Claude iOS / Android | no | Mobile does not run local MCP servers |
+
+Hard requirements on any client: Node.js 18 or newer, Google Chrome installed, the client must support MCP.
+
 ## Install
 
 ```bash
