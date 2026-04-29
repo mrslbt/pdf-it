@@ -4,14 +4,30 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
+  ListPromptsRequestSchema,
+  GetPromptRequestSchema,
+  ListResourcesRequestSchema,
+  ReadResourceRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import { generatePdf, closeBrowser } from './generator.js';
 import { listTemplates } from './templates/index.js';
+import { PROMPTS, buildPromptMessages } from './prompts.js';
+import { RESOURCES, readResource } from './resources.js';
 
 const server = new Server(
-  { name: 'pdf-it', version: '1.0.0' },
-  { capabilities: { tools: {} } }
+  { name: 'pdf-it', version: '1.1.0' },
+  {
+    capabilities: {
+      tools: {},
+      prompts: {},
+      resources: {},
+    },
+  }
 );
+
+// ─────────────────────────────────────────────────────────────────────────
+// Tools
+// ─────────────────────────────────────────────────────────────────────────
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [
@@ -114,6 +130,58 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     isError: true,
   };
 });
+
+// ─────────────────────────────────────────────────────────────────────────
+// Prompts
+// ─────────────────────────────────────────────────────────────────────────
+
+server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+  prompts: PROMPTS.map((p) => ({
+    name: p.name,
+    description: p.description,
+    arguments: p.arguments,
+  })),
+}));
+
+server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+  const { name, arguments: args } = request.params;
+  try {
+    return buildPromptMessages(name, args);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(message);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────
+// Resources
+// ─────────────────────────────────────────────────────────────────────────
+
+server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+  resources: RESOURCES.map((r) => ({
+    uri: r.uri,
+    name: r.name,
+    description: r.description,
+    mimeType: r.mimeType,
+  })),
+}));
+
+server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+  const { uri } = request.params;
+  try {
+    const content = readResource(uri);
+    return {
+      contents: [content],
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(message);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────
+// Lifecycle
+// ─────────────────────────────────────────────────────────────────────────
 
 async function shutdown(code = 0): Promise<never> {
   try {
