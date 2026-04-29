@@ -1,6 +1,7 @@
 # pdf-it
 
 [![pdf-it MCP server](https://glama.ai/mcp/servers/mrslbt/pdf-it/badges/score.svg)](https://glama.ai/mcp/servers/mrslbt/pdf-it)
+[![MCP Badge](https://lobehub.com/badge/mcp/mrslbt-pdf-it)](https://lobehub.com/mcp/mrslbt-pdf-it)
 [![npm version](https://img.shields.io/npm/v/pdf-it-mcp.svg)](https://www.npmjs.com/package/pdf-it-mcp)
 [![npm downloads](https://img.shields.io/npm/dm/pdf-it-mcp.svg)](https://www.npmjs.com/package/pdf-it-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
