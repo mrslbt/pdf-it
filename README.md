@@ -12,9 +12,9 @@ A Model Context Protocol (MCP) server and Claude Code skill that turns markdown 
 
 ## Why this exists
 
-Anthropic ships a [PDF skill](https://github.com/anthropics/skills/tree/main/skills/pdf) for reading and filling PDFs. It does not do composition. Every Claude Code research session ends the same way: you have a wall of useful markdown and no clean way to turn it into a PDF a person would want to read.
+Every Claude Code research session ends the same way: a wall of useful markdown and no clean way to turn it into a PDF a person would want to read. Chrome print is ugly. Manual HTML conversion is friction.
 
-`pdf-it` is the other half. Markdown in, designed PDF out, no Chrome printing, no manual HTML conversion.
+`pdf-it` does the work. Markdown in, designed PDF out. One command.
 
 ![pdf-it body example](./examples/body.png)
 
@@ -164,21 +164,6 @@ By default PDFs are written to `~/Documents/pdf-it/{slug}-{timestamp}.pdf`. Pass
 System fonts where possible. Inter for body and headings, JetBrains Mono for code, page numbers, and metadata. Pure white paper, near-black ink, neutral hairline borders, no accent colors. Code blocks render without syntax highlighting on purpose: color choices in PDFs age badly.
 
 If you want a different design language, fork the templates and adjust. They live in `src/templates/` and are plain HTML and CSS rendered through Puppeteer.
-
-## Comparison
-
-| | pdf-it | Anthropic PDF skill |
-|---|---|---|
-| Read text from a PDF | no | yes |
-| Extract tables from a PDF | no | yes |
-| Fill PDF forms | no | yes |
-| Merge, split, rotate, watermark | no | yes |
-| OCR scanned PDFs | no | yes |
-| **Compose a designed PDF from markdown** | **yes** | no |
-| Cover page, TOC, page numbers | yes | no |
-| Templates | yes | no |
-
-The two are complementary, not competing.
 
 ## License
 
