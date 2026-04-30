@@ -181,6 +181,10 @@ Total time: 2-3 seconds for a 5-page document, 8-10 seconds for a 30-page docume
 
 Listed on [npm](https://www.npmjs.com/package/pdf-it-mcp), [Glama](https://glama.ai/mcp/servers/mrslbt/pdf-it), [LobeHub](https://lobehub.com/mcp/mrslbt-pdf-it), [mcp.so](https://mcp.so/), and [mcpmux](https://mcpmux.com/).
 
+## Need a custom MCP?
+
+I build production MCP servers and AI-native tooling for teams. If you'd like one tailored to your stack, reach out: [marselbait.me](https://marselbait.me) · marselbait@gmail.com.
+
 ## Disclaimer
 
 This is an unofficial, community-built tool. It is not affiliated with, endorsed by, or sponsored by Anthropic PBC or Google LLC. Claude and Claude Code are trademarks of Anthropic PBC. Google Chrome is a trademark of Google LLC.
