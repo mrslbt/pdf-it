@@ -53,6 +53,7 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "start": "node dist/index.js",
+    "test": "node test/integration.test.mjs",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
