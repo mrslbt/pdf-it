@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build and smoke-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify dist artifacts exist
+        run: |
+          test -f dist/index.js
+          test -f dist/generator.js
+          test -f dist/markdown.js
+          test -f dist/templates/index.js
+          test -f dist/templates/research-report.js
+          test -f dist/templates/plain.js
+          test -f dist/templates/styles.js
+          echo "All required dist files present."
+
+      - name: Smoke test (server starts, lists tools, prompts, resources)
+        run: |
+          cat <<'EOF' > /tmp/mcp-smoke.json
+          {"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"ci","version":"1"}}}
+          {"jsonrpc":"2.0","method":"notifications/initialized"}
+          {"jsonrpc":"2.0","id":2,"method":"tools/list"}
+          {"jsonrpc":"2.0","id":3,"method":"prompts/list"}
+          {"jsonrpc":"2.0","id":4,"method":"resources/list"}
+          EOF
+          cat /tmp/mcp-smoke.json | node dist/index.js > /tmp/mcp-out.txt 2>&1 &
+          PID=$!
+          sleep 2
+          kill $PID 2>/dev/null || true
+          if grep -q '"name":"generate_pdf"' /tmp/mcp-out.txt; then
+            echo "Tools list contains generate_pdf"
+          else
+            echo "Smoke test failed: generate_pdf not found in tools list"
+            cat /tmp/mcp-out.txt
+            exit 1
+          fi
+          if grep -q '"name":"research_report"' /tmp/mcp-out.txt; then
+            echo "Prompts list contains research_report"
+          else
+            echo "Smoke test failed: research_report not found in prompts list"
+            exit 1
+          fi
+          if grep -q 'pdf-it://style-guide' /tmp/mcp-out.txt; then
+            echo "Resources list contains style-guide"
+          else
+            echo "Smoke test failed: style-guide not found in resources list"
+            exit 1
+          fi
