@@ -12,9 +12,11 @@ A Model Context Protocol (MCP) server and Claude Code skill that turns markdown 
 
 ## Why this exists
 
-Every Claude Code research session ends the same way: a wall of useful markdown and no clean way to turn it into a PDF a person would want to read. Chrome print is ugly. Manual HTML conversion is friction.
+Every Claude Code research session ends the same way: a wall of useful markdown and no clean way to turn it into a PDF a person would actually want to read.
 
-`pdf-it` does the work. Markdown in, designed PDF out. One command.
+Chrome print: takes 30 seconds, output looks like a Word doc. Manual HTML conversion: 10 minutes per document. Pandoc: works but defaults look like a 2008 academic paper. None of it produces an artifact you would send to a client.
+
+`pdf-it` is one command. The output is designed by default.
 
 ![pdf-it body example](./examples/body.png)
 
@@ -165,8 +167,24 @@ System fonts where possible. Inter for body and headings, JetBrains Mono for cod
 
 If you want a different design language, fork the templates and adjust. They live in `src/templates/` and are plain HTML and CSS rendered through Puppeteer.
 
+## How it works
+
+1. **Parse:** `markdown-it` converts your markdown to HTML and auto-generates a table of contents from H1 and H2 headings.
+2. **Template:** the HTML is wrapped in templated CSS (Inter for body, JetBrains Mono for code, neutral palette).
+3. **Render:** Puppeteer launches your local Chrome in headless mode and prints the HTML to PDF with proper page-break logic.
+4. **Footer:** `pdf-lib` adds a page-numbered footer programmatically, skipping cover and TOC pages.
+5. **Output:** the PDF lands in `~/Documents/pdf-it/{slug}-{timestamp}.pdf`.
+
+Total time: 2-3 seconds for a 5-page document, 8-10 seconds for a 30-page document.
+
+## Recognition
+
+Listed on [npm](https://www.npmjs.com/package/pdf-it-mcp), [Glama](https://glama.ai/mcp/servers/mrslbt/pdf-it), [LobeHub](https://lobehub.com/mcp/mrslbt-pdf-it), [mcp.so](https://mcp.so/), and [mcpmux](https://mcpmux.com/).
+
 ## License
 
 MIT. See [LICENSE](./LICENSE).
 
-Built by [Marsel Bait](https://marselbait.me).
+---
+
+*Built by [Marsel Bait](https://marselbait.me). Sixth shipped MCP. Tokyo-based. Open to senior product design roles, especially in AI-native companies.*
