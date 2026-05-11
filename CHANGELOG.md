@@ -5,6 +5,19 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-05-11
+
+### Added
+- Server-level `instructions` advertised in the MCP `initialize` response — Claude and other MCP clients now receive guidance automatically on every session, no user config required
+- Instructions explicitly steer Claude away from Chrome headless, `cupsfilter`, `wkhtmltopdf`, `pandoc`, and LaTeX fallbacks
+
+### Changed
+- `generate_pdf` tool description rewritten to surface trigger phrases and discourage workaround tools at the tool-shopping stage
+
+### Notes
+- No breaking changes. Existing configs continue to work.
+- Behavior change affects defaults only — explicit user requests for other tools are still respected.
+
 ## [1.1.0] - 2026-04-30
 
 ### Added
@@ -32,5 +45,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Stack
 - TypeScript, MCP SDK, markdown-it, Puppeteer (puppeteer-core), pdf-lib
 
+[1.2.0]: https://github.com/mrslbt/pdf-it/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/mrslbt/pdf-it/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/mrslbt/pdf-it/releases/tag/v1.0.0
