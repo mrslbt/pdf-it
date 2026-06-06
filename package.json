@@ -21,7 +21,7 @@
     "markdown-to-pdf",
     "report",
     "research",
-    "puppeteer",
+    "react-pdf",
     "ai-agents",
     "cursor"
   ],
@@ -78,6 +78,6 @@
     "typescript": "^5.7.0"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   }
 }
