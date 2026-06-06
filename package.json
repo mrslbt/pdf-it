@@ -2,7 +2,7 @@
   "name": "pdf-it-mcp",
   "version": "2.0.0",
   "mcpName": "io.github.mrslbt/pdf-it",
-  "description": "MCP server and Claude Code skill that turns markdown into designed PDFs. Cover page, table of contents, code blocks that hold across page breaks, page-numbered footer. Native renderer \u2014 no Chrome dependency.",
+  "description": "MCP server and Claude Code skill that turns markdown into designed PDFs. Cover page, table of contents, code blocks that hold across page breaks, page-numbered footer. Native renderer, no Chrome dependency.",
   "keywords": [
     "mcp",
     "mcp-server",

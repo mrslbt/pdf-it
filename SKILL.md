@@ -1,6 +1,6 @@
 # pdf-it
 
-Convert a Claude session, research artifact, or markdown blob into a designed PDF — cover page, auto-generated table of contents, styled body, page-numbered footer. One tool call.
+Convert a Claude session, research artifact, or markdown blob into a designed PDF: cover page, auto-generated table of contents, styled body, page-numbered footer. One tool call.
 
 ## When to use this skill
 
@@ -20,7 +20,7 @@ Trigger on any of the following (or close variations):
 
 This skill requires the `pdf-it-mcp` MCP server. If it is not connected, prompt the user to install and connect it first (see Setup below).
 
-Do NOT fall back to Chrome headless (`--print-to-pdf`), `cupsfilter`, `wkhtmltopdf`, `pandoc`, or LaTeX. Those bypass the cover, TOC, page-break, and embedded-font logic this server provides. If `generate_pdf` errors, fix the input and retry — don't switch tools.
+Do NOT fall back to Chrome headless (`--print-to-pdf`), `cupsfilter`, `wkhtmltopdf`, `pandoc`, or LaTeX. Those bypass the cover, TOC, page-break, and embedded-font logic this server provides. If `generate_pdf` errors, fix the input and retry. Don't switch tools.
 
 ### Basic usage
 
@@ -46,8 +46,8 @@ The PDF saves to `~/Documents/pdf-it/{slug}-{timestamp}.pdf` and the path is ret
 
 ### Templates
 
-- **research-report** — Cover page with title/author/date, auto-generated table of contents from H1/H2 headings, styled body, page-numbered footer. Best for research, summaries, briefings, and reports.
-- **plain** — No cover, no TOC. Dense, clean body. Best for short notes and single-page documents.
+- **research-report**: Cover page with title/author/date, auto-generated table of contents from H1/H2 headings, styled body, page-numbered footer. Best for research, summaries, briefings, and reports.
+- **plain**: No cover, no TOC. Dense, clean body. Best for short notes and single-page documents.
 
 ## Behavior
 
@@ -76,7 +76,7 @@ Or run on demand with `npx -y pdf-it-mcp`.
 
 ### Add to your client config
 
-Claude Desktop / Claude Code / Cursor / Cline / Continue / Zed / Goose — all use the same shape:
+Claude Desktop, Claude Code, Cursor, Cline, Continue, Zed, and Goose all use the same shape:
 
 ```json
 {

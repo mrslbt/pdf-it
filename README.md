@@ -8,7 +8,7 @@
 
 A Model Context Protocol (MCP) server and Claude Code skill that turns markdown into PDFs that look like they were made on purpose. Cover page, table of contents, code blocks that hold across page breaks, page-numbered footer. One command from your Claude session to a file you can send to a client.
 
-Native renderer. No Chrome dependency. Embedded typography ships with the package — every PDF looks the same on every machine.
+Native renderer, no Chrome dependency. Fonts are embedded, so every PDF looks the same on every machine.
 
 ![pdf-it cover example](./examples/cover.png)
 
@@ -125,12 +125,12 @@ Three families ship inside the package:
 
 Pure white paper, near-black ink (#111113), secondary ink for date and table cells (#2B2B2E), muted gray for page numbers and date (#7A7A7E), hairline borders (#E6E6E6). No accent colors. Code blocks render without syntax highlighting on purpose: color choices in PDFs age badly.
 
-Every value lives in `src/templates/design-tokens.ts` as the single source of truth. If you want a different design language, fork the components — they live in `src/templates/components/` and are plain React-PDF components with a small surface area.
+Every value lives in `src/templates/design-tokens.ts` as the single source of truth. If you want a different design language, fork the components. They live in `src/templates/components/` and are plain React-PDF components with a small surface area.
 
 ## How it works
 
 1. **Parse:** remark converts your markdown into an AST.
-2. **Compose:** the AST walks into typed React components — Cover, TOC, body primitives (H1/H2/H3, Paragraph, CodeBlock, Blockquote, Table, lists, charts).
+2. **Compose:** the AST becomes typed React components (Cover, TOC, and body primitives like H1/H2/H3, Paragraph, CodeBlock, Blockquote, Table, lists, and charts).
 3. **Render:** `@react-pdf/renderer` rasterizes the React tree into a deterministic PDF with embedded fonts and TOC anchors.
 4. **Output:** the PDF lands in `~/Documents/pdf-it/{slug}-{timestamp}.pdf` with title/author metadata embedded.
 
