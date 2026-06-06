@@ -138,7 +138,7 @@ Total time: typically sub-second for a 5-page document, 1-2 seconds for a 30-pag
 
 ## Recognition
 
-Listed on [npm](https://www.npmjs.com/package/pdf-it-mcp), [Glama](https://glama.ai/mcp/servers/mrslbt/pdf-it), [LobeHub](https://lobehub.com/mcp/mrslbt-pdf-it), [mcp.so](https://mcp.so/), and [mcpmux](https://mcpmux.com/).
+Listed on [npm](https://www.npmjs.com/package/pdf-it-mcp), [Glama](https://glama.ai/mcp/servers/mrslbt/pdf-it), and [LobeHub](https://lobehub.com/mcp/mrslbt-pdf-it).
 
 ## Disclaimer
 
