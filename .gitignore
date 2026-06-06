@@ -4,3 +4,8 @@ dist/
 .DS_Store
 *.pdf
 !examples/*.pdf
+
+# mcp-publisher auth tokens — SECRETS, never commit
+.mcpregistry_github_token
+.mcpregistry_registry_token
+.mcpregistry_*
