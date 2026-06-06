@@ -33,7 +33,7 @@ Or run on demand with `npx pdf-it-mcp`.
 ### Requirements
 
 - Node.js 20 or newer
-- No Chrome, no extra binaries. Fonts and renderer ship inside the package.
+- Nothing else to install. The renderer and fonts ship inside the package.
 
 ## Configure
 

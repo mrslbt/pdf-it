@@ -98,4 +98,4 @@ claude mcp add pdf-it -- npx -y pdf-it-mcp
 ### Requirements
 
 - Node.js 20 or newer.
-- No Chrome, no Puppeteer, no external runtime. The renderer (`@react-pdf/renderer`) and all fonts (Newsreader, JetBrains Mono, DM Sans) ship inside the package.
+- Nothing else to install. The renderer (`@react-pdf/renderer`) and all fonts (Newsreader, JetBrains Mono, DM Sans) ship inside the package.
