@@ -1,10 +1,10 @@
 # pdf-it
 
-Convert your Claude research output into a beautifully-designed PDF — cover page, table of contents, styled body, and page-numbered footer. One command.
+Convert a Claude session, research artifact, or markdown blob into a designed PDF — cover page, auto-generated table of contents, styled body, page-numbered footer. One tool call.
 
 ## When to use this skill
 
-Use this skill when the user says any of the following (or close variations):
+Trigger on any of the following (or close variations):
 
 - "save this as PDF"
 - "export as PDF"
@@ -20,9 +20,9 @@ Use this skill when the user says any of the following (or close variations):
 
 This skill requires the `pdf-it-mcp` MCP server. If it is not connected, prompt the user to install and connect it first (see Setup below).
 
-### Basic usage
+Do NOT fall back to Chrome headless (`--print-to-pdf`), `cupsfilter`, `wkhtmltopdf`, `pandoc`, or LaTeX. Those bypass the cover, TOC, page-break, and embedded-font logic this server provides. If `generate_pdf` errors, fix the input and retry — don't switch tools.
 
-Call the `generate_pdf` tool with the content you want to convert:
+### Basic usage
 
 ```
 generate_pdf({
@@ -32,22 +32,22 @@ generate_pdf({
 })
 ```
 
-The PDF will be saved to `~/Documents/pdf-it/` and the path returned.
+The PDF saves to `~/Documents/pdf-it/{slug}-{timestamp}.pdf` and the path is returned.
 
 ### Parameters
 
 | Parameter | Required | Description |
-|-----------|----------|-------------|
+|---|---|---|
 | `content` | Yes | Markdown string to convert |
 | `title` | No | Shown on cover page and footer |
 | `author` | No | Shown on cover page |
-| `output_path` | No | Custom output path (absolute) |
+| `output_path` | No | Custom output path. Absolute (`/Users/...`) or tilde-prefixed (`~/Desktop/x.pdf`) both work |
 | `template` | No | `research-report` (default) or `plain` |
 
 ### Templates
 
-- **research-report** — Cover page with title/author/date, auto-generated table of contents from H1/H2 headings, styled body, page-numbered footer. Best for research, summaries, and reports.
-- **plain** — No cover, no TOC. Clean, dense body. Best for notes and short documents.
+- **research-report** — Cover page with title/author/date, auto-generated table of contents from H1/H2 headings, styled body, page-numbered footer. Best for research, summaries, briefings, and reports.
+- **plain** — No cover, no TOC. Dense, clean body. Best for short notes and single-page documents.
 
 ## Behavior
 
@@ -59,10 +59,10 @@ The PDF will be saved to `~/Documents/pdf-it/` and the path returned.
 
 ## Example interaction
 
-**User:** Save this as a PDF  
-**Claude:** Generating PDF with the research-report template...  
-*(calls generate_pdf)*  
-**Claude:** Done. Your PDF is at `~/Documents/pdf-it/my-research-2025-01-15T14-30-00.pdf`
+**User:** Save this as a PDF
+**Claude:** Generating PDF with the research-report template…
+*(calls generate_pdf)*
+**Claude:** Done. Your PDF is at `~/Documents/pdf-it/my-research-2026-06-07T14-30-00.pdf`
 
 ## Setup
 
@@ -72,49 +72,30 @@ The PDF will be saved to `~/Documents/pdf-it/` and the path returned.
 npm install -g pdf-it-mcp
 ```
 
-### Add to Claude Code config
+Or run on demand with `npx -y pdf-it-mcp`.
 
-```json
-{
-  "mcpServers": {
-    "pdf-it": {
-      "command": "pdf-it-mcp"
-    }
-  }
-}
-```
+### Add to your client config
 
-Or if using `npx`:
+Claude Desktop / Claude Code / Cursor / Cline / Continue / Zed / Goose — all use the same shape:
 
 ```json
 {
   "mcpServers": {
     "pdf-it": {
       "command": "npx",
-      "args": ["pdf-it-mcp"]
+      "args": ["-y", "pdf-it-mcp"]
     }
   }
 }
+```
+
+For Claude Code specifically:
+
+```bash
+claude mcp add pdf-it -- npx -y pdf-it-mcp
 ```
 
 ### Requirements
 
-- Node.js 18+
-- Google Chrome installed (used for PDF rendering — no extra download)
-
-### Custom Chrome path
-
-If Chrome is in a non-standard location:
-
-```json
-{
-  "mcpServers": {
-    "pdf-it": {
-      "command": "pdf-it-mcp",
-      "env": {
-        "CHROME_PATH": "/path/to/chrome"
-      }
-    }
-  }
-}
-```
+- Node.js 20 or newer.
+- No Chrome, no Puppeteer, no external runtime. The renderer (`@react-pdf/renderer`) and all fonts (Newsreader, JetBrains Mono, DM Sans) ship inside the package.

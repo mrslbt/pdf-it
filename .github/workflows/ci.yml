@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Build and integration test
+    name: Build + smoke test
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -22,10 +22,6 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install Chrome
-        uses: browser-actions/setup-chrome@v1
-        id: setup-chrome
-
       - name: Install dependencies
         run: npm ci
 
@@ -36,14 +32,45 @@ jobs:
         run: |
           test -f dist/index.js
           test -f dist/generator.js
-          test -f dist/markdown.js
+          test -f dist/markdown/render.js
           test -f dist/templates/index.js
-          test -f dist/templates/research-report.js
-          test -f dist/templates/plain.js
-          test -f dist/templates/styles.js
+          test -f dist/templates/ResearchReport.js
+          test -f dist/templates/Plain.js
+          test -f dist/templates/design-tokens.js
+          test -f dist/templates/fonts.js
+          test -f dist/assets/fonts/Newsreader-Display60-Light.ttf
+          test -f dist/assets/fonts/JetBrainsMono-Regular.ttf
+          test -f dist/assets/fonts/DMSans-Variable.ttf
           echo "All required dist files present."
 
-      - name: Integration test (real PDF generation)
-        env:
-          CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
-        run: npm test
+      - name: Smoke test (boot MCP + tools/list + generate_pdf)
+        run: |
+          node -e '
+            const { spawn } = require("child_process");
+            const proc = spawn("node", ["dist/index.js"]);
+            let buf = "";
+            proc.stdout.on("data", d => { buf += d.toString(); });
+            const send = m => proc.stdin.write(JSON.stringify(m) + "\n");
+            send({jsonrpc:"2.0",id:1,method:"initialize",params:{protocolVersion:"2024-11-05",capabilities:{},clientInfo:{name:"ci",version:"1"}}});
+            send({jsonrpc:"2.0",method:"notifications/initialized"});
+            send({jsonrpc:"2.0",id:2,method:"tools/list"});
+            send({jsonrpc:"2.0",id:3,method:"tools/call",params:{name:"generate_pdf",arguments:{content:"# CI smoke\n\nThis is the CI smoke test.",title:"CI",output_path:"/tmp/ci-smoke.pdf"}}});
+            setTimeout(() => {
+              proc.kill();
+              const lines = buf.trim().split("\n").map(l => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
+              const init = lines.find(l => l.id === 1);
+              const tools = lines.find(l => l.id === 2);
+              const call = lines.find(l => l.id === 3);
+              const fs = require("fs");
+              if (init?.result?.serverInfo?.name !== "pdf-it") { console.error("FAIL: server name"); process.exit(1); }
+              const toolNames = (tools?.result?.tools || []).map(t => t.name);
+              if (!toolNames.includes("generate_pdf") || !toolNames.includes("list_templates")) {
+                console.error("FAIL: missing tools", toolNames); process.exit(1);
+              }
+              if (call?.error || call?.result?.isError) { console.error("FAIL: generate_pdf", JSON.stringify(call)); process.exit(1); }
+              if (!fs.existsSync("/tmp/ci-smoke.pdf")) { console.error("FAIL: PDF not written"); process.exit(1); }
+              const size = fs.statSync("/tmp/ci-smoke.pdf").size;
+              if (size < 1000) { console.error("FAIL: PDF too small:", size); process.exit(1); }
+              console.log("OK — server boots, tools advertised, PDF written (" + size + " bytes)");
+            }, 3000);
+          '

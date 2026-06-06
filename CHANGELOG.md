@@ -5,6 +5,40 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-06-06
+
+Production-grade rewrite. Same design language; entirely new render stack.
+
+### BREAKING CHANGES
+
+- **Chrome is no longer required.** v1 used `puppeteer-core` to launch a local Chrome and print HTML to PDF. v2 renders directly with `@react-pdf/renderer`. Drop `CHROME_PATH` from your MCP config if you set it; it has no effect now.
+- **Node ≥ 20 required** (was ≥ 18). React 19 + TypeScript 6 baseline.
+
+### Added
+
+- **Native renderer.** Markdown → mdast AST → React components → PDF, in a single deterministic pass. No external runtime, no font CDN dependency at render time, no post-render PDF mutation.
+- **Embedded fonts.** Five baked instances of Newsreader (Display 60 Light, Display 32 Regular, Text Regular/Medium/Italic) plus JetBrains Mono and DM Sans ship inside the package. Every PDF renders identically on every machine — no "looks different on my Mac" surprises.
+- **Design token system** (`src/templates/design-tokens.ts`) — single source of truth for colors, type sizes, leadings, and the cover positioning ratios. Every component reads from here; no eyeballed values anywhere.
+- **First chart primitive**: `HorizontalBarChart` (`src/templates/components/charts/HorizontalBarChart.tsx`). Editorial restraint applied to data viz — monochrome, hairline baseline, DM Sans labels, JetBrains Mono values.
+
+### Removed
+
+- `puppeteer-core` runtime dependency
+- `pdf-lib` runtime dependency (page numbering now handled inside the React tree)
+- `markdown-it` runtime dependency (replaced by remark)
+- `CHROME_PATH` environment variable — no longer relevant
+- Cover-page logo support — never publicly shipped; restraint is the brand. The cover is type-only by design.
+
+### Changed
+
+- Bundle: ~750 KB compressed (up from ~120 KB), but no external runtime. Net install footprint is smaller (no Chrome download / detection failure mode).
+- Generation speed: sub-second for typical documents (5-15 pages). v1 took 2-3 seconds because Puppeteer was launching Chrome.
+
+### Notes
+
+- The MCP tool surface (`generate_pdf`, `list_templates`), the prompts (`research_report`, `quick_note`, `pdf_outline`), and the resources are unchanged. Any Claude Code skill or client integration written against v1 continues to work.
+- If you persisted any `~/.pdf-it/brand.json` files from the alpha that was never publicly released, they are now ignored.
+
 ## [1.2.0] - 2026-05-11
 
 ### Added
@@ -45,6 +79,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Stack
 - TypeScript, MCP SDK, markdown-it, Puppeteer (puppeteer-core), pdf-lib
 
+[2.0.0]: https://github.com/mrslbt/pdf-it/compare/v1.2.0...v2.0.0
 [1.2.0]: https://github.com/mrslbt/pdf-it/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/mrslbt/pdf-it/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/mrslbt/pdf-it/releases/tag/v1.0.0
