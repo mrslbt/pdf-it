@@ -8,7 +8,7 @@
 
 A Model Context Protocol (MCP) server and Claude Code skill that turns markdown into PDFs that look like they were made on purpose. Cover page, table of contents, code blocks that hold across page breaks, page-numbered footer. One command from your Claude session to a file you can send to a client.
 
-Native renderer, no Chrome dependency. Fonts are embedded, so every PDF looks the same on every machine.
+Fonts ship inside the package, so every PDF looks the same on every machine. Nothing to install, nothing to configure.
 
 ![pdf-it cover example](./examples/cover.png)
 
