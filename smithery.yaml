@@ -1,0 +1,20 @@
+# Smithery config — https://smithery.ai/docs/build/project-config
+#
+# pdf-it has no required env vars. It writes PDFs to ~/Documents/pdf-it/ by
+# default (override per-call via the generate_pdf tool's output_path arg).
+#
+# `commandFunction` returns the exact spawn config so Smithery can run pdf-it
+# locally on the user's machine with one click. No interactive setup.
+
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties: {}
+    required: []
+  exampleConfig: {}
+  commandFunction: |-
+    () => ({
+      command: "npx",
+      args: ["-y", "pdf-it-mcp"]
+    })

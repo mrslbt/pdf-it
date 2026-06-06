@@ -1,8 +1,8 @@
 {
   "name": "pdf-it-mcp",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "mcpName": "io.github.mrslbt/pdf-it",
-  "description": "Turn Claude research output into designed PDFs. Cover page, table of contents, code blocks that hold across pages. MCP server and Claude Code skill for markdown to PDF.",
+  "description": "MCP server and Claude Code skill that turns markdown into designed PDFs. Cover page, table of contents, code blocks that hold across page breaks, page-numbered footer. Native renderer \u2014 no Chrome dependency.",
   "keywords": [
     "mcp",
     "mcp-server",
@@ -45,26 +45,36 @@
   },
   "files": [
     "dist",
-    "SKILL.md",
+    "samples",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npm run build:assets",
     "dev": "tsc --watch",
     "start": "node dist/index.js",
     "test": "node test/integration.test.mjs",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "preview:cover": "tsx src/preview-cover.tsx",
+    "preview:report": "tsx src/preview-research-report.tsx",
+    "preview:chart": "tsx src/preview-chart.tsx",
+    "build:assets": "node -e \"import('fs').then(({cpSync}) => cpSync('src/assets', 'dist/assets', {recursive: true}))\""
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "markdown-it": "^14.1.1",
-    "pdf-lib": "^1.17.1",
-    "puppeteer-core": "^24.42.0"
+    "@react-pdf/renderer": "^4.5.1",
+    "react": "^19.2.0",
+    "unified": "^11.0.5",
+    "remark-parse": "^11.0.0",
+    "remark-gfm": "^4.0.1",
+    "mdast-util-to-string": "^4.0.0"
   },
   "devDependencies": {
-    "@types/markdown-it": "^14.1.2",
-    "@types/node": "^22.0.0",
+    "@types/mdast": "^4.0.4",
+    "@types/node": "^25.9.2",
+    "@types/react": "^19.2.0",
+    "tsx": "^4.22.4",
     "typescript": "^5.7.0"
   },
   "engines": {

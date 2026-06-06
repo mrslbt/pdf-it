@@ -9,13 +9,13 @@ import {
   ListResourcesRequestSchema,
   ReadResourceRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
-import { generatePdf, closeBrowser } from './generator.js';
+import { generatePdf } from './generator.js';
 import { listTemplates } from './templates/index.js';
 import { PROMPTS, buildPromptMessages } from './prompts.js';
 import { RESOURCES, readResource } from './resources.js';
 
 const server = new Server(
-  { name: 'pdf-it', version: '1.2.0' },
+  { name: 'pdf-it', version: '2.0.0' },
   {
     capabilities: {
       tools: {},
@@ -58,6 +58,17 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       name: 'generate_pdf',
       description:
         'Convert markdown into a designed PDF (cover page, auto TOC, page-numbered footer). Use this for any "save/export/print/share as PDF", "make a report", "turn this into a PDF", or /pdf request — do NOT fall back to Chrome headless, cupsfilter, wkhtmltopdf, pandoc, or LaTeX. Templates: research-report (cover + TOC, default) or plain (no cover, no TOC).',
+      annotations: {
+        title: 'Generate PDF',
+        // Writes a new file to disk; not read-only.
+        readOnlyHint: false,
+        // Creates a new file with a timestamp; never overwrites or deletes existing files.
+        destructiveHint: false,
+        // Re-invoking with the same args produces a NEW file (timestamped path differs).
+        idempotentHint: false,
+        // Operates only on the local filesystem with bundled fonts; no network access.
+        openWorldHint: false,
+      },
       inputSchema: {
         type: 'object',
         properties: {
@@ -92,6 +103,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: 'list_templates',
       description: 'List all available PDF templates with their descriptions.',
+      annotations: {
+        title: 'List PDF Templates',
+        // Pure read of a static, in-process registry.
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
       inputSchema: {
         type: 'object',
         properties: {},
@@ -207,11 +226,6 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
 // ─────────────────────────────────────────────────────────────────────────
 
 async function shutdown(code = 0): Promise<never> {
-  try {
-    await closeBrowser();
-  } catch {
-    // ignore
-  }
   process.exit(code);
 }
 

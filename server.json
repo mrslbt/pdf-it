@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.mrslbt/pdf-it",
-  "description": "Turn Claude research output into designed PDFs. Cover page, table of contents, code blocks that hold across pages.",
+  "description": "Native PDF renderer for AI-generated markdown. Cover, TOC, page-numbered footer. No Chrome dependency.",
   "repository": {
     "url": "https://github.com/mrslbt/pdf-it",
     "source": "github"
   },
-  "version": "1.1.0",
+  "version": "2.0.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "pdf-it-mcp",
-      "version": "1.1.0",
+      "version": "2.0.0",
       "transport": {
         "type": "stdio"
       }

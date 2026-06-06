@@ -8,6 +8,8 @@
 
 A Model Context Protocol (MCP) server and Claude Code skill that turns markdown into PDFs that look like they were made on purpose. Cover page, table of contents, code blocks that hold across page breaks, page-numbered footer. One command from your Claude session to a file you can send to a client.
 
+Native renderer. No Chrome dependency. Embedded typography ships with the package — every PDF looks the same on every machine.
+
 ![pdf-it cover example](./examples/cover.png)
 
 ## Why this exists
@@ -20,27 +22,6 @@ Chrome print: takes 30 seconds, output looks like a Word doc. Manual HTML conver
 
 ![pdf-it body example](./examples/body.png)
 
-A 12-page sample is in [`examples/designing-ai-agent-uiux.pdf`](./examples/designing-ai-agent-uiux.pdf).
-
-## Works with
-
-`pdf-it` is a standard Model Context Protocol server. Any client that supports MCP locally can use it.
-
-| Client | Supported | How to add |
-|---|---|---|
-| Claude Desktop (Mac, Windows) | yes | Edit `claude_desktop_config.json` |
-| Claude Code (CLI) | yes, plus skill triggers like "save this as PDF" | `claude mcp add pdf-it -- npx -y pdf-it-mcp` |
-| Cursor | yes | Edit `~/.cursor/mcp.json` |
-| Cline (VS Code extension) | yes | Edit Cline's MCP settings |
-| Continue.dev | yes | Add via Continue's MCP config |
-| Zed | yes | Standard MCP config |
-| Goose (Block's CLI) | yes | Standard MCP config |
-| Custom agents via the Anthropic SDK | yes | Wire MCP yourself |
-| claude.ai (browser) | no | Web does not run local MCP servers |
-| Claude iOS / Android | no | Mobile does not run local MCP servers |
-
-Hard requirements on any client: Node.js 18 or newer, Google Chrome installed, the client must support MCP.
-
 ## Install
 
 ```bash
@@ -51,8 +32,8 @@ Or run on demand with `npx pdf-it-mcp`.
 
 ### Requirements
 
-- Node.js 18 or newer
-- Google Chrome installed (used as the renderer, no extra download)
+- Node.js 20 or newer
+- No Chrome, no extra binaries. Fonts and renderer ship inside the package.
 
 ## Configure
 
@@ -79,34 +60,11 @@ claude mcp add pdf-it -- npx -y pdf-it-mcp
 
 ### Cursor
 
-Add to `~/.cursor/mcp.json`:
+Add to `~/.cursor/mcp.json` with the same shape as Claude Desktop.
 
-```json
-{
-  "mcpServers": {
-    "pdf-it": {
-      "command": "npx",
-      "args": ["-y", "pdf-it-mcp"]
-    }
-  }
-}
-```
+### Cline / Continue / Zed / Goose
 
-### Custom Chrome path
-
-If Chrome lives somewhere non-standard:
-
-```json
-{
-  "mcpServers": {
-    "pdf-it": {
-      "command": "npx",
-      "args": ["-y", "pdf-it-mcp"],
-      "env": { "CHROME_PATH": "/path/to/chrome" }
-    }
-  }
-}
-```
+Standard MCP config. Same `npx -y pdf-it-mcp` command.
 
 ## Use
 
@@ -129,7 +87,7 @@ Or any of these phrasings: `export as PDF`, `make a PDF report from this`, `turn
 |---|---|---|
 | `content` | yes | Markdown string to convert |
 | `title` | no | Shown on the cover and in the page footer |
-| `author` | no | Shown on the cover |
+| `author` | no | Shown on the cover above the date |
 | `output_path` | no | Absolute path for the output. Defaults to `~/Documents/pdf-it/{slug}-{timestamp}.pdf` |
 | `template` | no | `research-report` (default) or `plain` |
 
@@ -153,29 +111,30 @@ This package ships with a Claude Code skill at `SKILL.md`. Trigger phrases the s
 
 See [SKILL.md](./SKILL.md) for the full skill spec.
 
-## Examples
-
-The [examples](./examples) folder has a sample generated PDF (`designing-ai-agent-uiux.pdf`, 12 pages) and the cover and body screenshots used in this README.
-
 ## Output
 
 By default PDFs are written to `~/Documents/pdf-it/{slug}-{timestamp}.pdf`. Pass `output_path` to override.
 
 ## Design
 
-System fonts where possible. Inter for body and headings, JetBrains Mono for code, page numbers, and metadata. Pure white paper, near-black ink, neutral hairline borders, no accent colors. Code blocks render without syntax highlighting on purpose: color choices in PDFs age badly.
+Three families ship inside the package:
 
-If you want a different design language, fork the templates and adjust. They live in `src/templates/` and are plain HTML and CSS rendered through Puppeteer.
+- **Newsreader** for the cover title (display 60, light) and body H1 (display 32). High-contrast serif that holds editorial weight at large sizes.
+- **DM Sans** for H2, H3, table type, and the TOC heading. Quieter sub-hierarchy.
+- **JetBrains Mono** for page numbers, metadata, code, and figure captions.
+
+Pure white paper, near-black ink (#111113), secondary ink for date and table cells (#2B2B2E), muted gray for page numbers and date (#7A7A7E), hairline borders (#E6E6E6). No accent colors. Code blocks render without syntax highlighting on purpose: color choices in PDFs age badly.
+
+Every value lives in `src/templates/design-tokens.ts` as the single source of truth. If you want a different design language, fork the components — they live in `src/templates/components/` and are plain React-PDF components with a small surface area.
 
 ## How it works
 
-1. **Parse:** `markdown-it` converts your markdown to HTML and auto-generates a table of contents from H1 and H2 headings.
-2. **Template:** the HTML is wrapped in templated CSS (Inter for body, JetBrains Mono for code, neutral palette).
-3. **Render:** Puppeteer launches your local Chrome in headless mode and prints the HTML to PDF with proper page-break logic.
-4. **Footer:** `pdf-lib` adds a page-numbered footer programmatically, skipping cover and TOC pages.
-5. **Output:** the PDF lands in `~/Documents/pdf-it/{slug}-{timestamp}.pdf`.
+1. **Parse:** remark converts your markdown into an AST.
+2. **Compose:** the AST walks into typed React components — Cover, TOC, body primitives (H1/H2/H3, Paragraph, CodeBlock, Blockquote, Table, lists, charts).
+3. **Render:** `@react-pdf/renderer` rasterizes the React tree into a deterministic PDF with embedded fonts and TOC anchors.
+4. **Output:** the PDF lands in `~/Documents/pdf-it/{slug}-{timestamp}.pdf` with title/author metadata embedded.
 
-Total time: 2-3 seconds for a 5-page document, 8-10 seconds for a 30-page document.
+Total time: typically sub-second for a 5-page document, 1-2 seconds for a 30-page document.
 
 ## Recognition
 
@@ -183,14 +142,10 @@ Listed on [npm](https://www.npmjs.com/package/pdf-it-mcp), [Glama](https://glama
 
 ## Disclaimer
 
-This is an unofficial, community-built tool. It is not affiliated with, endorsed by, or sponsored by Anthropic PBC or Google LLC. Claude and Claude Code are trademarks of Anthropic PBC. Google Chrome is a trademark of Google LLC.
+This is an unofficial, community-built tool. It is not affiliated with, endorsed by, or sponsored by Anthropic PBC. Claude and Claude Code are trademarks of Anthropic PBC.
 
-`pdf-it` runs locally and renders PDFs through the user's installed Chrome via Puppeteer. Use at your own risk. The author accepts no liability for issues arising from misuse, prompt injection, bugs, or rendering failures.
+`pdf-it` runs locally and ships its own renderer (`@react-pdf/renderer`) and fonts. Use at your own risk. The author accepts no liability for issues arising from misuse, prompt injection, bugs, or rendering failures.
 
 ## License
 
 MIT. See [LICENSE](./LICENSE).
-
----
-
-*Built by [Marsel Bait](https://marselbait.me). Sixth shipped MCP. Tokyo-based. Open to senior product design roles, especially in AI-native companies.*
