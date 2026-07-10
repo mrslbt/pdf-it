@@ -1,27 +1,15 @@
 #!/usr/bin/env node
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-  ListPromptsRequestSchema,
-  GetPromptRequestSchema,
-  ListResourcesRequestSchema,
-  ReadResourceRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js';
+import { z } from 'zod';
 import { generatePdf } from './generator.js';
 import { listTemplates } from './templates/index.js';
 import { PROMPTS, buildPromptMessages } from './prompts.js';
 import { RESOURCES, readResource } from './resources.js';
 
-const server = new Server(
-  { name: 'pdf-it', version: '2.0.0' },
+const server = new McpServer(
+  { name: 'pdf-it', version: '2.1.0' },
   {
-    capabilities: {
-      tools: {},
-      prompts: {},
-      resources: {},
-    },
     instructions: `pdf-it converts markdown into designed PDFs with cover pages, tables of contents, page-numbered footers, and styled body content.
 
 WHEN TO USE
@@ -52,98 +40,51 @@ For longer flows, use the bundled prompts: \`research_report\` (research + gener
 // Tools
 // ─────────────────────────────────────────────────────────────────────────
 
-server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: [
-    {
-      name: 'generate_pdf',
-      description:
-        'Convert markdown into a designed PDF (cover page, auto TOC, page-numbered footer). Use this for any "save/export/print/share as PDF", "make a report", "turn this into a PDF", or /pdf request — do NOT fall back to Chrome headless, cupsfilter, wkhtmltopdf, pandoc, or LaTeX. Templates: research-report (cover + TOC, default) or plain (no cover, no TOC).',
-      annotations: {
-        title: 'Generate PDF',
-        // Writes a new file to disk; not read-only.
-        readOnlyHint: false,
-        // Creates a new file with a timestamp; never overwrites or deletes existing files.
-        destructiveHint: false,
-        // Re-invoking with the same args produces a NEW file (timestamped path differs).
-        idempotentHint: false,
-        // Operates only on the local filesystem with bundled fonts; no network access.
-        openWorldHint: false,
-      },
-      inputSchema: {
-        type: 'object',
-        properties: {
-          content: {
-            type: 'string',
-            description: 'Markdown content to convert to PDF.',
-          },
-          output_path: {
-            type: 'string',
-            description:
-              'Absolute path for the output PDF. Defaults to ~/Documents/pdf-it/{title}-{timestamp}.pdf',
-          },
-          title: {
-            type: 'string',
-            description: 'Document title shown on the cover page and footer.',
-          },
-          author: {
-            type: 'string',
-            description: 'Author name shown on the cover page.',
-          },
-          template: {
-            type: 'string',
-            enum: ['research-report', 'plain'],
-            description:
-              'Template to use. "research-report" (default) adds a cover page and table of contents. "plain" renders body content only.',
-            default: 'research-report',
-          },
-        },
-        required: ['content'],
-      },
+server.registerTool(
+  'generate_pdf',
+  {
+    title: 'Generate PDF',
+    description:
+      'Convert markdown into a designed PDF (cover page, auto TOC, page-numbered footer). Use this for any "save/export/print/share as PDF", "make a report", "turn this into a PDF", or /pdf request — do NOT fall back to Chrome headless, cupsfilter, wkhtmltopdf, pandoc, or LaTeX. Templates: research-report (cover + TOC, default) or plain (no cover, no TOC).',
+    inputSchema: {
+      content: z.string().describe('Markdown content to convert to PDF.'),
+      output_path: z
+        .string()
+        .optional()
+        .describe(
+          'Absolute path for the output PDF. Defaults to ~/Documents/pdf-it/{title}-{timestamp}.pdf'
+        ),
+      title: z
+        .string()
+        .optional()
+        .describe('Document title shown on the cover page and footer.'),
+      author: z.string().optional().describe('Author name shown on the cover page.'),
+      template: z
+        .enum(['research-report', 'plain'])
+        .default('research-report')
+        .describe(
+          'Template to use. "research-report" (default) adds a cover page and table of contents. "plain" renders body content only.'
+        ),
     },
-    {
-      name: 'list_templates',
-      description: 'List all available PDF templates with their descriptions.',
-      annotations: {
-        title: 'List PDF Templates',
-        // Pure read of a static, in-process registry.
-        readOnlyHint: true,
-        destructiveHint: false,
-        idempotentHint: true,
-        openWorldHint: false,
-      },
-      inputSchema: {
-        type: 'object',
-        properties: {},
-      },
+    annotations: {
+      title: 'Generate PDF',
+      // Writes a new file to disk; not read-only.
+      readOnlyHint: false,
+      // Creates a new file with a timestamp; never overwrites or deletes existing files.
+      destructiveHint: false,
+      // Re-invoking with the same args produces a NEW file (timestamped path differs).
+      idempotentHint: false,
+      // Operates only on the local filesystem with bundled fonts; no network access.
+      openWorldHint: false,
     },
-  ],
-}));
-
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  const { name, arguments: args } = request.params;
-
-  if (name === 'generate_pdf') {
-    const { content, output_path, title, author, template } = args as {
-      content: string;
-      output_path?: string;
-      title?: string;
-      author?: string;
-      template?: string;
-    };
-
-    if (!content || typeof content !== 'string') {
-      return {
-        content: [{ type: 'text', text: 'Error: content is required and must be a string.' }],
-        isError: true,
-      };
-    }
-
+  },
+  async ({ content, output_path, title, author, template }) => {
     try {
       const result = await generatePdf({ content, output_path, title, author, template });
       return {
         content: [
           {
-            type: 'text',
+            type: 'text' as const,
             text: `PDF created successfully.\n\nPath: ${result.path}\nPages: ${result.page_count}`,
           },
         ],
@@ -151,75 +92,75 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       return {
-        content: [{ type: 'text', text: `Error generating PDF: ${message}` }],
+        content: [{ type: 'text' as const, text: `Error generating PDF: ${message}` }],
         isError: true,
       };
     }
   }
+);
 
-  if (name === 'list_templates') {
+server.registerTool(
+  'list_templates',
+  {
+    title: 'List PDF Templates',
+    description: 'List all available PDF templates with their descriptions.',
+    inputSchema: {},
+    annotations: {
+      title: 'List PDF Templates',
+      // Pure read of a static, in-process registry.
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+  },
+  async () => {
     const templates = listTemplates();
-    const formatted = templates
-      .map(t => `• ${t.name}\n  ${t.description}`)
-      .join('\n\n');
+    const formatted = templates.map(t => `• ${t.name}\n  ${t.description}`).join('\n\n');
     return {
-      content: [{ type: 'text', text: formatted }],
+      content: [{ type: 'text' as const, text: formatted }],
     };
   }
-
-  return {
-    content: [{ type: 'text', text: `Unknown tool: ${name}` }],
-    isError: true,
-  };
-});
+);
 
 // ─────────────────────────────────────────────────────────────────────────
-// Prompts
+// Prompts — data-driven from PROMPTS; args mapped to zod string schemas
 // ─────────────────────────────────────────────────────────────────────────
 
-server.setRequestHandler(ListPromptsRequestSchema, async () => ({
-  prompts: PROMPTS.map((p) => ({
-    name: p.name,
-    description: p.description,
-    arguments: p.arguments,
-  })),
-}));
-
-server.setRequestHandler(GetPromptRequestSchema, async (request) => {
-  const { name, arguments: args } = request.params;
-  try {
-    return buildPromptMessages(name, args);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    throw new Error(message);
-  }
-});
+for (const p of PROMPTS) {
+  const argsSchema = Object.fromEntries(
+    p.arguments.map(a => [
+      a.name,
+      (a.required ? z.string() : z.string().optional()).describe(a.description),
+    ])
+  );
+  server.registerPrompt(
+    p.name,
+    { description: p.description, argsSchema },
+    async (args) =>
+      buildPromptMessages(
+        p.name,
+        Object.fromEntries(
+          Object.entries(args as Record<string, string | undefined>).filter(
+            ([, v]) => v !== undefined
+          )
+        ) as Record<string, string>
+      )
+  );
+}
 
 // ─────────────────────────────────────────────────────────────────────────
-// Resources
+// Resources — data-driven from RESOURCES
 // ─────────────────────────────────────────────────────────────────────────
 
-server.setRequestHandler(ListResourcesRequestSchema, async () => ({
-  resources: RESOURCES.map((r) => ({
-    uri: r.uri,
-    name: r.name,
-    description: r.description,
-    mimeType: r.mimeType,
-  })),
-}));
-
-server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
-  const { uri } = request.params;
-  try {
-    const content = readResource(uri);
-    return {
-      contents: [content],
-    };
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    throw new Error(message);
-  }
-});
+for (const r of RESOURCES) {
+  server.registerResource(
+    r.name,
+    r.uri,
+    { description: r.description, mimeType: r.mimeType },
+    async () => ({ contents: [readResource(r.uri)] })
+  );
+}
 
 // ─────────────────────────────────────────────────────────────────────────
 // Lifecycle
